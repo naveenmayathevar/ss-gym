@@ -1,18 +1,29 @@
 from app import create_app, db
 from flask_migrate import upgrade
-from app.models.user import User  # Make sure you import the User model!
+from sqlalchemy import text
+from app.models.user import User
 
 app = create_app()
 
 with app.app_context():
-    upgrade()
-    
+    try:
+        # Try to run migrations normally
+        upgrade()
+    except Exception as e:
+        # If it crashes, wipe the corrupted tables clean and try again!
+        print(f"Database mismatch detected! Healing database... Error: {e}")
+        db.session.rollback()
+        db.drop_all()
+        db.session.execute(text("DROP TABLE IF EXISTS alembic_version"))
+        db.session.commit()
+        upgrade()
+        
     # ---> THE ADMIN HACK <---
-    # Replace the email below with the exact email you registered with on your live site!
+    # Put the email you are ABOUT TO register with below!
     my_user = User.query.filter_by(email="naveenmayathevar@gmail.com").first()
     
     if my_user and my_user.role != 'admin':
-        my_user.role = 'admin'  # Giving you the admin role!
+        my_user.role = 'admin'
         db.session.commit()
         print("Boom! Admin user promoted!")
 
