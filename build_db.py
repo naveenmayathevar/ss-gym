@@ -1,13 +1,14 @@
 from app import create_app, db
 from sqlalchemy import text
-from app.models.user import User  # (Change 'user' to 'users' if your file is named users.py)
+from app.models.user import User  # Make sure this matches your file structure!
 
 app = create_app()
 
 with app.app_context():
     print("Cleaning up corrupted database tables...")
-    db.drop_all()
-    db.session.execute(text("DROP TABLE IF EXISTS alembic_version"))
+    # The "Nuke it from orbit" command for PostgreSQL
+    db.session.execute(text("DROP SCHEMA public CASCADE;"))
+    db.session.execute(text("CREATE SCHEMA public;"))
     db.session.commit()
     
     print("Building fresh, perfect tables...")
