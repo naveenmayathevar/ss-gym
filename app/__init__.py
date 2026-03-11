@@ -3,6 +3,7 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from flask_login import LoginManager
 from app.config import Config
+import stripe  # <-- ADDED: 1. Import the Stripe library
 
 # Initialize extensions
 db = SQLAlchemy()
@@ -12,6 +13,9 @@ login_manager = LoginManager()
 def create_app(config_class=Config):
     app = Flask(__name__)
     app.config.from_object(config_class)
+    
+    # <-- ADDED: 2. Give Stripe the secret key we just put in Config
+    stripe.api_key = app.config.get('STRIPE_SECRET_KEY') 
 
     # Attach extensions
     db.init_app(app)
