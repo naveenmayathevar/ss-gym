@@ -13,5 +13,5 @@ COPY . .
 # Expose port 5000
 EXPOSE 5000
 
-# Command to run the application using Gunicorn (production server)
-CMD ["gunicorn", "--bind", "0.0.0.0:5000", "run:app"]
+# Run the database builder, THEN start the Gunicorn server
+CMD python build_db.py && gunicorn --bind 0.0.0.0:5000 run:app
