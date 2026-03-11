@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row mt-5">
+    <div class="col-md-8 offset-md-2 text-center">
+        <div class="card shadow-lg border-0 rounded-lg mt-5 p-5">
+            <h1 class="display-1 fw-bold text-primary">404</h1>
+            <h2 class="mb-4">Whoops! You missed a step.</h2>
+            
+            <p class="lead mb-4">
+                We can't seem to find the page you're looking for. It might have been deleted, or maybe it skipped leg day and disappeared.
+            </p>
+            
+            <div>
+                <a href="/dashboard" class="btn btn-primary btn-lg me-2">
+                    <i class="bi bi-house-door"></i> Back to Dashboard
+                </a>
+                <a href="/classes" class="btn btn-outline-secondary btn-lg">
+                    <i class="bi bi-calendar-event"></i> View Schedule
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,12 @@
+# Ignore secret environment variables
+.env
+
+# Ignore the local SQLite database
+instance/
+
+# Ignore Python cache files
+__pycache__/
+*.pyc
+
+# Ignore Mac system files (just in case)
+.DS_Store

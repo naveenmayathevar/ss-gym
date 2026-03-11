@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col">
+        <h2>Admin Control Panel</h2>
+        <hr>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-4 mb-4">
+        <div class="card shadow-sm">
+            <div class="card-header bg-dark text-white">Add New Class</div>
+
+            <div class="card-body">
+                <form method="POST" action="/admin">
+
+                    <div class="mb-3">
+                        <label class="form-label">Class Title</label>
+                        <input type="text" name="title" class="form-control" required placeholder="e.g. Pilates">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Instructor</label>
+                        <input type="text" name="instructor" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Schedule Time</label>
+                        <input type="datetime-local" name="schedule_time" class="form-control" required>
+                    </div>
+                    <div class="mb-4">
+                        <label class="form-label">Class Capacity</label>
+                        <input type="number" name="capacity" class="form-control" required value="20" min="1">
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100">Create Class</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-8">
+        <div class="card shadow-sm">
+            <div class="card-header bg-secondary text-white">Manage Schedule</div>
+            <div class="card-body p-0">
+                <table class="table table-hover mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Title</th>
+                            <th>Instructor</th>
+                            <th>Time</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for c in classes %}
+                        <tr>
+                            <td>{{ c.title }}</td>
+                            <td>{{ c.instructor }}</td>
+                            <td>{{ c.schedule_time }}</td>
+                            <td>
+                                <a href="/admin/roster/{{ c.id }}" class="btn btn-sm btn-info me-1">Roster</a>
+
+                                <form action="/admin/delete/{{ c.id }}" method="POST" style="display: inline;">
+                                    <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

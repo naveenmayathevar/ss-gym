@@ -1,0 +1,150 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row mt-4">
+    <div class="col-md-8 offset-md-2">
+        <div class="card shadow">
+            <div class="card-header bg-primary text-white">
+                <h3 class="mb-0">Member Dashboard</h3>
+            </div>
+
+            <div class="card-body">
+
+                <div class="d-flex align-items-center mb-4 gap-4">
+
+                    <img src="{{ current_user.avatar(150) }}" class="rounded-circle shadow p-1 border border-white"
+                        style="width: 100px; height: 100px; object-fit: cover; background-color: #f8f9fa;"
+                        alt="Profile Picture">
+
+                    <div>
+                        <h2 class="mb-1">Welcome, {{ current_user.name }}!</h2>
+                        <p class="text-muted mb-0">Member Since: {{ current_user.created_at.strftime('%B %d, %Y') }}</p>
+                    </div>
+
+                </div>
+
+                <div class="bg-light p-3 rounded mb-3 border">
+                    <strong>My Goal:</strong> {{ current_user.fitness_goal or "No goal set yet!" }}
+                </div>
+                <a href="/settings" class="btn btn-sm btn-outline-primary mb-4">Edit Profile</a>
+
+
+               {% if current_user.is_premium %}
+                <div class="alert alert-success shadow-sm">
+                    <h4 class="alert-heading">👑 Premium Member</h4>
+                    <p class="mb-2">You have unlimited access to all classes!</p>
+                    <form action="{{ url_for('main.cancel_membership') }}" method="POST"
+                        onsubmit="return confirm('Are you sure you want to cancel?');">
+                        <button type="submit" class="btn btn-outline-danger btn-sm">Cancel Premium</button>
+                    </form>
+                </div>
+
+                {% elif (current_user.class_passes and current_user.class_passes > 0) or upcoming_bookings %}
+                <div class="alert alert-info shadow-sm d-flex justify-content-between align-items-center flex-wrap gap-2">
+                    <div>
+                        <h4 class="alert-heading mb-1">🎟️ Active Passes: <strong>{{ current_user.class_passes or 0 }}</strong></h4>
+                        {% if upcoming_bookings %}
+                        <p class="mb-0 small">You are all set for your upcoming classes below!</p>
+                        {% else %}
+                        <p class="mb-0 small">You can use your passes to book classes below.</p>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="d-flex gap-2">
+                        {% if not current_user.class_passes or current_user.class_passes == 0 %}
+                        <form action="{{ url_for('main.checkout') }}" method="POST" class="m-0">
+                            <input type="hidden" name="plan" value="single">
+                            <button type="submit" class="btn btn-outline-primary btn-sm bg-white fw-bold shadow-sm">Buy Another Pass</button>
+                        </form>
+                        {% endif %}
+                        <form action="{{ url_for('main.checkout') }}" method="POST" class="m-0">
+                            <input type="hidden" name="plan" value="premium">
+                            <button type="submit" class="btn btn-warning btn-sm fw-bold shadow-sm">Upgrade to Premium</button>
+                        </form>
+                    </div>
+                </div>
+
+                {% else %}
+                <div class="row mb-4">
+                    <div class="col-md-6 mb-3 mb-md-0">
+                        <div class="card bg-dark text-white shadow h-100">
+                            <div class="card-body text-center">
+                                <h5 class="text-info">Single Class Pass</h5>
+                                <h3 class="mb-3">$15.00</h3>
+                                <p class="small">Good for any one class on the schedule.</p>
+                                <form action="{{ url_for('main.checkout') }}" method="POST">
+                                    <input type="hidden" name="plan" value="single">
+                                    <button type="submit" class="btn btn-info fw-bold w-100">Buy 1 Pass</button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="card bg-primary text-white shadow h-100">
+                            <div class="card-body text-center">
+                                <h5 class="text-warning">Premium Member</h5>
+                                <h3 class="mb-3">$49.99<small class="fs-6">/mo</small></h3>
+                                <p class="small">Unlimited access to all classes.</p>
+                                <form action="{{ url_for('main.checkout') }}" method="POST">
+                                    <input type="hidden" name="plan" value="premium">
+                                    <button type="submit" class="btn btn-warning fw-bold w-100">Upgrade to VIP</button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+
+
+
+
+                <hr>
+
+                <h3>My Upcoming Classes</h3>
+
+                {% if upcoming_bookings %}
+                <ul class="list-group mt-3 mb-4">
+                    {% for booking in upcoming_bookings %}
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        <div>
+                            <strong>{{ booking.gym_class.title }}</strong><br>
+                            <small class="text-muted">with {{ booking.gym_class.instructor }} |
+                                {{ booking.gym_class.schedule_time.strftime('%A, %B %d at %I:%M %p') }}</small>
+                        </div>
+
+                        <div class="d-flex align-items-center gap-2">
+                            <span class="badge bg-success rounded-pill">Booked</span>
+
+                            <form action="{{ url_for('main.cancel_booking', booking_id=booking.id) }}" method="POST"
+                                class="m-0">
+                                <button type="submit" class="btn btn-sm btn-outline-danger"
+                                    onclick="return confirm('Are you sure you want to cancel this class?');">Cancel</button>
+                            </form>
+                        </div>
+                    </li>
+                    {% endfor %}
+                </ul>
+                {% else %}
+                <p class="text-muted mt-3 mb-4">You have no upcoming classes. Go to the schedule to find one!</p>
+                {% endif %}
+
+                {% if past_bookings %}
+                <h4 class="mt-4 text-muted">Class History</h4>
+                <ul class="list-group mt-2 opacity-75">
+                    {% for booking in past_bookings %}
+                    <li class="list-group-item bg-light d-flex justify-content-between align-items-center">
+                        <div>
+                            <strong>{{ booking.gym_class.title }}</strong><br>
+                            <small class="text-muted">Attended: {{ booking.gym_class.schedule_time.strftime('%B %d, %Y') }}</small>
+                        </div>
+                        <span class="badge bg-secondary rounded-pill">Completed</span>
+                    </li>
+                    {% endfor %}
+                </ul>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

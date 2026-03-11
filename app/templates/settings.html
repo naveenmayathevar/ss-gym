@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row justify-content-center mt-4">
+    <div class="col-md-6">
+        <div class="card shadow">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0">Profile Settings</h4>
+            </div>
+            <div class="card-body">
+                <form method="POST" action="/settings" enctype="multipart/form-data">
+                    <div class="mb-3">
+                        <label class="form-label">Profile Picture</label>
+                        <input class="form-control" type="file" name="profile_pic" accept="image/*">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Full Name</label>
+                        <input type="text" name="name" class="form-control" value="{{ current_user.name }}" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">My Fitness Goal</label>
+                        <textarea name="fitness_goal" class="form-control" rows="3">{{ current_user.fitness_goal or '' }}</textarea>
+                    </div>
+                    <button type="submit" class="btn btn-success w-100">Save Changes</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

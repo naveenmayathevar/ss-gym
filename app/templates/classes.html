@@ -1,0 +1,94 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2 class="mb-4 text-center">Class Schedule</h2>
+
+<div class="row justify-content-center mb-4">
+    <div class="col-md-6">
+        <form action="/classes" method="GET" class="d-flex">
+            <input type="text" name="q" class="form-control me-2" placeholder="Search for a class..." value="{{ search_query or '' }}">
+            <button type="submit" class="btn btn-outline-primary">Search</button>
+            {% if search_query %}
+                <a href="/classes" class="btn btn-outline-secondary ms-2">Clear</a>
+            {% endif %}
+        </form>
+    </div>
+</div>
+
+<div class="row">
+    {% for gym_class in pagination.items %}
+    <div class="col-md-4 mb-4">
+        <div class="card shadow-sm h-100">
+            <div class="card-body">
+                <h4 class="card-title text-primary">{{ gym_class.title }}</h4>
+                <p class="card-text"><strong>Instructor:</strong> {{ gym_class.instructor }}</p>
+                <p class="card-text"><strong>When:</strong> {{ gym_class.schedule_time }}</p>
+                
+                <div class="mb-3">
+                    {% if gym_class.spots_left > 0 %}
+                        <span class="badge bg-info">{{ gym_class.spots_left }} spots remaining</span>
+                    {% else %}
+                        <span class="badge bg-danger">Full Capacity</span>
+                    {% endif %}
+                </div>
+                
+                {% if current_user.is_authenticated %}
+                <div class="mt-3 mb-3">
+                        <div class="d-flex justify-content-between small text-muted mb-1">
+                            <span>Capacity</span>
+                            <span class="fw-bold">{{ gym_class.spots_left }} spots left</span>
+                        </div>
+                        <div class="progress" style="height: 10px;">
+                            <div class="progress-bar 
+                                {% if gym_class.fill_percentage >= 100 %}bg-danger
+                                {% elif gym_class.fill_percentage >= 75 %}bg-warning
+                                {% else %}bg-success{% endif %}" 
+                                role="progressbar" 
+                                style="width: {{ gym_class.fill_percentage }}%;" 
+                                aria-valuenow="{{ gym_class.fill_percentage }}" 
+                                aria-valuemin="0" 
+                                aria-valuemax="100">
+                            </div>
+                        </div>
+                    </div>
+                <form action="/book/{{ gym_class.id }}" method="POST">
+                    <button type="submit" class="btn btn-success w-100" {% if gym_class.spots_left <= 0 %}disabled{% endif %}>Book Class</button>
+                </form>
+                {% else %}
+                <a href="/auth/login" class="btn btn-secondary w-100">Log in to book</a>
+                {% endif %}
+                
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<div class="row mt-4">
+    <div class="col d-flex justify-content-center">
+        <nav aria-label="Class pagination">
+            <ul class="pagination">
+                
+                <li class="page-item {% if not pagination.has_prev %}disabled{% endif %}">
+                    <a class="page-link" href="{{ url_for('main.classes', page=pagination.prev_num, q=search_query) }}">Previous</a>
+                </li>
+                
+                {% for page_num in pagination.iter_pages(left_edge=1, right_edge=1, left_current=1, right_current=2) %}
+                    {% if page_num %}
+                        <li class="page-item {% if pagination.page == page_num %}active{% endif %}">
+                            <a class="page-link" href="{{ url_for('main.classes', page=page_num, q=search_query) }}">{{ page_num }}</a>
+                        </li>
+                    {% else %}
+                        <li class="page-item disabled"><span class="page-link">...</span></li>
+                    {% endif %}
+                {% endfor %}
+                
+                <li class="page-item {% if not pagination.has_next %}disabled{% endif %}">
+                    <a class="page-link" href="{{ url_for('main.classes', page=pagination.next_num, q=search_query) }}">Next</a>
+                </li>
+                
+            </ul>
+        </nav>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SS Fitness</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container">
+            <a class="navbar-brand" href="/">SS Fitness</a>
+            <div class="collapse navbar-collapse">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item"><a class="nav-link" href="/classes">Classes</a></li>
+
+                    {% if current_user.is_authenticated and current_user.role == 'admin' %}
+                    <li class="nav-item"><a class="nav-link text-warning fw-bold" href="/admin">Admin Panel</a></li>
+                    {% endif %}
+
+                    {% if current_user.is_authenticated %}
+                    <li class="nav-item">
+                        <a class="nav-link text-white fw-bold d-flex align-items-center" href="/dashboard">
+                            <img src="{{ current_user.avatar(24) }}" class="rounded-circle me-2"
+                                style="width: 24px; height: 24px; object-fit: cover;" alt="Avatar">
+                            My Dashboard
+                        </a>
+                    </li>
+                    <li class="nav-item"><a class="nav-link" href="/auth/logout">Logout</a></li>
+                    {% else %}
+                    <li class="nav-item"><a class="nav-link" href="/auth/login">Login</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/auth/register">Register</a></li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+        {% for category, message in messages %}
+        <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        {% endfor %}
+        {% endif %}
+        {% endwith %}
+
+        {% block content %}
+        {% endblock %}
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <div id="chatbot-widget" class="position-fixed bottom-0 end-0 m-4" style="z-index: 1050;">
+
+        <div id="chat-window" class="card shadow d-none mb-2"
+            style="width: 320px; height: 400px; display: flex; flex-direction: column;">
+            <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                <h6 class="mb-0 fw-bold">🤖 SS Fitness Bot</h6>
+                <div class="d-flex align-items-center gap-2">
+                    <a href="https://wa.me/15551234567" target="_blank" class="btn btn-sm btn-success rounded-pill fw-bold" style="font-size: 0.75rem;" title="Chat with Staff">
+                        💬 WhatsApp
+                    </a>
+                    <button type="button" class="btn-close btn-close-white" aria-label="Close" onclick="toggleChat()"></button>
+                </div>
+            </div>
+
+            <div id="chat-messages" class="card-body overflow-auto" style="flex-grow: 1; background-color: #f8f9fa;">
+                <div class="mb-2 text-start">
+                    <span class="bg-secondary text-white rounded px-3 py-2 d-inline-block small">
+                        Hi! I'm the SS Fitness Bot. How can I help you today?
+                    </span>
+                </div>
+            </div>
+
+            <div class="card-footer p-2 bg-white">
+                <div class="input-group">
+                    <input type="text" id="chat-input" class="form-control form-control-sm"
+                        placeholder="Ask about hours, classes..." onkeypress="handleKeyPress(event)">
+                    <button class="btn btn-primary btn-sm" onclick="sendMessage()">Send</button>
+                </div>
+            </div>
+        </div>
+
+        <button id="chat-btn"
+            class="btn btn-primary rounded-circle shadow-lg float-end d-flex justify-content-center align-items-center"
+            style="width: 60px; height: 60px;" onclick="toggleChat()">
+            <span class="fs-3">💬</span>
+        </button>
+    </div>
+
+    <script>
+        function toggleChat() {
+            const chatWindow = document.getElementById('chat-window');
+            chatWindow.classList.toggle('d-none');
+        }
+
+        function handleKeyPress(event) {
+            if (event.key === 'Enter') {
+                sendMessage();
+            }
+        }
+
+        async function sendMessage() {
+            const inputField = document.getElementById('chat-input');
+            const message = inputField.value.trim();
+            if (!message) return;
+
+            // 1. Clear input
+            inputField.value = '';
+
+            const chatMessages = document.getElementById('chat-messages');
+
+            // 2. Add user message to UI (Blue bubble on the right)
+            chatMessages.innerHTML += `
+                <div class="mb-2 text-end">
+                    <span class="bg-primary text-white rounded px-3 py-2 d-inline-block small">${message}</span>
+                </div>
+            `;
+
+            // Scroll to bottom
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+
+            // 3. Send to Python Backend
+            try {
+                const response = await fetch('/api/chat', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        message: message
+                    })
+                });
+
+                const data = await response.json();
+
+                // 4. Add bot response to UI (Grey bubble on the left)
+                chatMessages.innerHTML += `
+                    <div class="mb-2 text-start">
+                        <span class="bg-secondary text-white rounded px-3 py-2 d-inline-block small">${data.reply}</span>
+                    </div>
+                `;
+
+                // Scroll to bottom again
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+
+            } catch (error) {
+                console.error("Error communicating with bot:", error);
+            }
+        }
+    </script>
+</body>
+
+</html>
