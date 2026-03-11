@@ -1,6 +1,6 @@
 from app import create_app, db
 from sqlalchemy import text
-from app.models.user import User  # Make sure this matches your file structure!
+from app.models.user import User 
 
 app = create_app()
 
@@ -21,7 +21,7 @@ with app.app_context():
         role="admin",
         is_premium=True
     )
-    admin.set_password("Admin123!")         # <-- Your temporary password
+    admin.set_password("Admin123!")         
     
     db.session.add(admin)
     db.session.commit()
