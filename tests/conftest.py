@@ -2,6 +2,13 @@
 conftest.py — Pytest fixtures shared across all test files.
 This file is automatically loaded by pytest before any tests run.
 """
+import sys
+import os
+
+# Add the project root to sys.path so `from app import ...` works
+# regardless of where pytest is invoked from (repo root, CI, subdirectory).
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
 import pytest
 from app import create_app, db
 from app.models.user import User
