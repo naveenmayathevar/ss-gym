@@ -15,9 +15,8 @@ jobs:
     runs-on: ubuntu-latest
 
     # All steps run from inside the "SS Gym" subfolder
-    defaults:
-      run:
-        working-directory: "SS Gym"
+    run: pip install -r "SS Gym/requirements.txt"
+    run: cd "SS Gym" && pytest --tb=short -v
 
     steps:
       - name: Checkout code
