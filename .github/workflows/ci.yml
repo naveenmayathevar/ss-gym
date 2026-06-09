@@ -7,16 +7,9 @@ on:
     branches: [main]
 
 jobs:
-  # ─────────────────────────────────────────────
-  # JOB 1: Run all tests
-  # ─────────────────────────────────────────────
   test:
     name: Run Tests
     runs-on: ubuntu-latest
-
-    # All steps run from inside the "SS Gym" subfolder
-    run: pip install -r "SS Gym/requirements.txt"
-    run: cd "SS Gym" && pytest --tb=short -v
 
     steps:
       - name: Checkout code
@@ -31,12 +24,12 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ~/.cache/pip
-          key: ${{ runner.os }}-pip-${{ hashFiles('SS Gym/requirements.txt') }}
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
           restore-keys: |
             ${{ runner.os }}-pip-
 
       - name: Install dependencies
-        run: pip install -r requirements.txt
+        run: pip install -r "SS Gym/requirements.txt"
 
       - name: Run pytest
         env:
@@ -44,7 +37,7 @@ jobs:
           DATABASE_URL: sqlite:///test.db
           STRIPE_API_KEY: sk_test_fake
           STRIPE_PUBLIC_KEY: pk_test_fake
-        run: pytest --tb=short -v
+        run: cd "SS Gym" && pytest --tb=short -v
 
       - name: Upload test results
         if: always()
@@ -53,9 +46,6 @@ jobs:
           name: test-results
           path: "SS Gym/.pytest_cache/"
 
-  # ─────────────────────────────────────────────
-  # JOB 2: Deploy to Render (only on main branch)
-  # ─────────────────────────────────────────────
   deploy:
     name: Deploy to Render
     runs-on: ubuntu-latest
