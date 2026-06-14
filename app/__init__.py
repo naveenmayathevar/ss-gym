@@ -1,4 +1,4 @@
-from flask import Flask
+from flask_openapi3 import OpenAPI, Info
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from flask_login import LoginManager
@@ -11,7 +11,13 @@ migrate = Migrate()
 login_manager = LoginManager()
 
 def create_app(config_class=Config):
-    app = Flask(__name__)
+    info = Info(title="SS Gym API", version="1.0.0")
+    app = OpenAPI(
+    __name__,
+    info=info,
+    doc_prefix="/docs",
+    doc_url="/openapi.json"
+)
     app.config.from_object(config_class)
     
     # <-- ADDED: 2. Give Stripe the secret key we just put in Config
@@ -40,10 +46,10 @@ def create_app(config_class=Config):
 
     # Register our Auth Blueprint
     from app.routes.auth import auth_bp
-    app.register_blueprint(auth_bp, url_prefix='/auth')
+    app.register_api(auth_bp, url_prefix='/auth')
 
     # Register our Main Blueprint
     from app.routes.main import main_bp
-    app.register_blueprint(main_bp)
+    app.register_api(main_bp)
 
     return app
